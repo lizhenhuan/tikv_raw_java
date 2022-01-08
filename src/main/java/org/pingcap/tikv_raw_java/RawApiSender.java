@@ -23,11 +23,19 @@ public class RawApiSender {
 		}
 		return false;
 	}
+	public boolean sendRawApiDelete(String key) {
+		if (client != null) {
+			client.delete(ByteString.copyFrom(key.getBytes(StandardCharsets.UTF_8)));
+			return true;
+		}
+		return false;
+	}
 	public static void main(String [] args) {
 		RawApiSender.init("172.16.4.88:2384,172.16.4.89:2384,172.16.4.91:2384");
 		RawApiSender rawApiSender = new RawApiSender();
 		rawApiSender.sendRawApi("k1","v4");
+		rawApiSender.sendRawApiDelete("kstring1");
 		ByteString value = client.get(ByteString.copyFrom("kstring1".getBytes(StandardCharsets.UTF_8)));
-		System.out.println(value.toStringUtf8());
+		System.out.println(value.toStringUtf8() + "  end");
 	}
 }
