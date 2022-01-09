@@ -5,6 +5,8 @@ import org.tikv.common.TiSession;
 import org.tikv.raw.RawKVClient;
 import org.tikv.shade.com.google.protobuf.ByteString;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
 
 public class RawApiSender {
@@ -30,12 +32,26 @@ public class RawApiSender {
 		}
 		return false;
 	}
-	public static void main(String [] args) {
-		RawApiSender.init("172.16.4.88:2384,172.16.4.89:2384,172.16.4.91:2384");
+	public static void main(String [] args) throws Exception {
+        BufferedReader bufferedReader = new BufferedReader(new FileReader("/tmp/tidb/kv"));
+		RawApiSender.init("172.16.4.81:42379,172.16.4.88:42379,172.16.4.88:42379");
 		RawApiSender rawApiSender = new RawApiSender();
-		rawApiSender.sendRawApi("k1","v4");
-		rawApiSender.sendRawApiDelete("kstring1");
-		ByteString value = client.get(ByteString.copyFrom("kstring1".getBytes(StandardCharsets.UTF_8)));
-		System.out.println(value.toStringUtf8() + "  end");
+        String line;
+        while((line = bufferedReader.readLine()) != null) {
+            String [] arr = line.split("#");
+			if (arr.length == 3) {
+				String key = arr[0];
+				String value = arr[1];
+				String type = arr[2];
+				System.out.println(String.format("key is %s, value is %s, type is %s", key, value, type));
+				if (type.equals("INSERT")) {
+
+					rawApiSender.sendRawApi(key, value);
+				} else {
+					rawApiSender.sendRawApiDelete(key);
+				}
+			}
+        }
+        bufferedReader.close();
 	}
 }
